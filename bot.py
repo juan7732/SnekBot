@@ -28,7 +28,7 @@ async def respond(message):
 @client.event
 async def on_message(message):
     # Logging
-
+    # new comment to test
     global prevchannel
     ts = time.time()
     stamp = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
