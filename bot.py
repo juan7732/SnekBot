@@ -24,11 +24,12 @@ async def on_ready():
 async def respond(message):
     await client.add_reaction(message, 'Jebaited:288754567347175424')
 
+async def poll()
 
 @client.event
 async def on_message(message):
     # Logging
-    # new comment to test
+
     global prevchannel
     ts = time.time()
     stamp = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
@@ -39,7 +40,7 @@ async def on_message(message):
 
     # Commands
     if message.author == client.user:
-        pass
+        pass  # ignores self text
     else:
             # test command
         if message.content.startswith('!test'):
@@ -56,6 +57,16 @@ async def on_message(message):
             await client.send_message(message.channel, 'List of commands includes: \n!test\n!sleep\n!gn\n!commands')
             await respond(message)
 
+            # poll command
+        elif message.content.startswith('!poll'):
+            pollList = str(message.content).split()
+            pollList.pop(0)
+            pollString = ''
+            for i in (0,len(pollList) - 1):
+                pollString = pollString + pollList[i] + ' '
+            await client.send_message(message.channel, 'To vote, simply enter your choice: ' + pollString)
+
+
             # bot diagnostic command
         elif message.content.startswith('!botinfo'):
             await client.send_message(message.channel, 'I AM SnekBot!\n' + ('-' * 14))
@@ -65,8 +76,7 @@ async def on_message(message):
 
             # set playing command
         elif message.content.startswith('!setplay'):
-            gamePlaying = str(message.content)
-            gamePlayinglist = gamePlaying.split()
+            gamePlayinglist = str(message.content.split())
             gamePlayinglist.pop(0)
             gamestr = gamePlayinglist[0] + ' '
             try:
