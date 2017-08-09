@@ -24,7 +24,10 @@ async def on_ready():
 async def respond(message):
     await client.add_reaction(message, 'Jebaited:288754567347175424')
 
-async def poll()
+async def poll(message):
+    global count += 1
+    pass
+
 
 @client.event
 async def on_message(message):
