@@ -58,7 +58,9 @@ async def on_message(message):
 
             # bot diagnostic command
         elif message.content.startswith('!botinfo'):
-            await client.send_message(message.channel, 'I AM SnekBot!')
+            await client.send_message(message.channel, 'I AM SnekBot!\n' + ('-' * 14))
+            serversize = str(len(set(client.get_all_members())))
+            await client.send_message(message.channel, 'Currently serving: ' + serversize + ' hoomans.')
             await respond(message)
 
             # set playing command
@@ -87,7 +89,7 @@ async def on_message(message):
             await respond(message)
 
             # disconnect command
-        elif message.content.startswith('!gettingmyshotgun'):
+        elif message.content.startswith('!getmyshotty'):
             await client.send_message(message.channel, 'AHHH!')
             await client.close()
             if client.is_closed:
