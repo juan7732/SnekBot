@@ -24,6 +24,7 @@ async def on_ready():
 async def respond(message):
     await client.add_reaction(message, 'Jebaited:288754567347175424')
 
+
 @client.event
 async def on_message(message):
     # Logging
@@ -57,7 +58,7 @@ async def on_message(message):
 
             # bot diagnostic command
         elif message.content.startswith('!botinfo'):
-            await client.send_message(message.channel, '')
+            await client.send_message(message.channel, 'I AM SnekBot!')
             await respond(message)
 
             # set playing command
