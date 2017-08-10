@@ -3,14 +3,25 @@ import asyncio
 import logging
 import time
 import datetime
+import threading as thr
+
 try:
     with open('tokenid.txt') as f:
         token = f.read()
 except IOError:
     print('Error with token file, Client may not launch')
     token = ''
+
+# logging module: Critical, Error, Warning, Info, and Debug
 logging.basicConfig(level=logging.INFO)
+
+# Global Variables
 prevchannel = ''
+isPolling = False
+pollDict = {}
+pollCount = 0
+pollArg = ''
+# client naming
 client = discord.Client()
 
 
@@ -25,15 +36,28 @@ async def respond(message):
     await client.add_reaction(message, 'Jebaited:288754567347175424')
 
 async def poll(message):
-    global count += 1
-    pass
+    # global pollCount
+    # global pollArg
+    global pollDict
+    if str(message.content) == pollArg:
+        pollCount += 1
+
 
 
 @client.event
 async def on_message(message):
-    # Logging
-
+    # global variable usage
+    global isPolling
     global prevchannel
+    # global pollCount
+    # global pollArg
+    global pollDict
+
+    # Poll
+    if isPolling:
+        await poll(message)
+
+    # Logging
     ts = time.time()
     stamp = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
     if str(message.channel) != prevchannel:
@@ -48,8 +72,9 @@ async def on_message(message):
             # test command
         if message.content.startswith('!test'):
             counter = 0
+
             tmp = await client.send_message(message.channel, 'Calculating messages...')
-            async for log in client.logs_from(message.channel, limit= 100):
+            async for log in client.logs_from(message.channel, limit=100):
                 if log.author == message.author:
                     counter += 1
             await client.edit_message(tmp, 'You have {} messages.'.format(counter))
@@ -61,25 +86,39 @@ async def on_message(message):
             await respond(message)
 
             # poll command
-        elif message.content.startswith('!poll'):
+        elif message.content.startswith('!poll') and not isPolling:
+            isPolling = True
             pollList = str(message.content).split()
             pollList.pop(0)
             pollString = ''
-            for i in (0,len(pollList) - 1):
+            for i in (0, len(pollList) - 1):
                 pollString = pollString + pollList[i] + ' '
             await client.send_message(message.channel, 'To vote, simply enter your choice: ' + pollString)
+            # pollArg = pollList[0]
+            # for item in pollList:
 
+            await respond(message)
+
+            # poll command error handling
+        elif message.content.startswith('!poll') and isPolling:
+            await client.send_message(message.channel, 'Stop the current poll to start a new poll hiss!')
+            await respond(message)
+
+            # stop poll command
+        elif message.content.startswith('!stoppoll') and isPolling:
+            isPolling = False
+            await client.send_message(message.channel, '```Poll results:\n' + pollArg + ' received ' + str(pollCount) + ' votes' + '```')
 
             # bot diagnostic command
-        elif message.content.startswith('!botinfo'):
-            await client.send_message(message.channel, 'I AM SnekBot!\n' + ('-' * 14))
+        elif message.content.startswith('!info'):
             serversize = str(len(set(client.get_all_members())))
-            await client.send_message(message.channel, 'Currently serving: ' + serversize + ' hoomans.')
+            threads = thr.active_count()
+            await client.send_message(message.channel, '```' + 'I AM SnekBot!\n' + ('-' * 14) + '\nCurrently serving: ' + serversize + ' hoomans.' + '\nActive Threads: ' + str(threads) + '```')
             await respond(message)
 
             # set playing command
         elif message.content.startswith('!setplay'):
-            gamePlayinglist = str(message.content.split())
+            gamePlayinglist = str(message.content).split()
             gamePlayinglist.pop(0)
             gamestr = gamePlayinglist[0] + ' '
             try:
