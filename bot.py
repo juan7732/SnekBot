@@ -102,8 +102,8 @@ async def on_message(message):
                 pollString = pollString + pollList[i] + ' '
             await client.send_message(message.channel, 'To vote, simply enter your choice: ' + pollString)
             # pollArg = pollList[0]
-            for i in range(0, len(pollList) - 1):
-                pollDict.update({str(pollList[i]): 0})
+            for i in range(0, len(pollList)):
+                pollDict[str(pollList[i])] = 0
             await respond(message)
 
             # poll command error handling
@@ -116,11 +116,10 @@ async def on_message(message):
             isPolling = False
             pollResultString = ''
             i = 0
-            print(len(pollDict))
             for items in pollDict:
-                pollResultString = str(items) + ' received ' + str(pollDict[items]) + ' votes\n'
+                pollResultString = pollResultString + '\n' + str(items) + ' received ' + str(pollDict[items]) + ' votes'
                 i += 1
-            await client.send_message(message.channel, '```Poll results:\n' + str(pollResultString) + '```')
+            await client.send_message(message.channel, '```Poll results:' + str(pollResultString) + '```')
 
             # bot diagnostic command
         elif message.content.startswith('!info'):

@@ -1,6 +1,5 @@
 ToDo:
-SnekBot
-fix polling list to dictionary issue
+Snek
 add reminders
 add custom command utility
 work on backend logging and usability
