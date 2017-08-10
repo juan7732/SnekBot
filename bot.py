@@ -19,29 +19,38 @@ logging.basicConfig(level=logging.INFO)
 prevchannel = ''
 isPolling = False
 pollDict = {}
-pollCount = 0
-pollArg = ''
+startTime = ''
 # client naming
 client = discord.Client()
 
 
+# Join event
 @client.event
 async def on_ready():
+    global startTime
     print('Logged in as')
     print(client.user.name)
     print(client.user.id)
     print('-' * len(client.user.id))
+    startTime = time.time()
 
 async def respond(message):
     await client.add_reaction(message, 'Jebaited:288754567347175424')
 
 async def poll(message):
-    # global pollCount
-    # global pollArg
     global pollDict
-    if str(message.content) == pollArg:
-        pollCount += 1
+    if any(k in str(message.content) for k in pollDict):
+        pollDict[str(message.content)] += 1
+    else:
+        pass
 
+
+def get_time(currenttime, starttime):
+    uptime = currenttime - starttime
+    hours = uptime / 3600
+    minutes = (uptime % 3600) / 60
+    seconds = uptime % 60
+    return str(int(hours)) + 'h ' + str(int(minutes)) + 'm ' + str(int(seconds)) + 's'
 
 
 @client.event
@@ -49,13 +58,8 @@ async def on_message(message):
     # global variable usage
     global isPolling
     global prevchannel
-    # global pollCount
-    # global pollArg
+    global startTime
     global pollDict
-
-    # Poll
-    if isPolling:
-        await poll(message)
 
     # Logging
     ts = time.time()
@@ -69,10 +73,13 @@ async def on_message(message):
     if message.author == client.user:
         pass  # ignores self text
     else:
+        # Poll
+        if isPolling:
+            await poll(message)
+
             # test command
         if message.content.startswith('!test'):
             counter = 0
-
             tmp = await client.send_message(message.channel, 'Calculating messages...')
             async for log in client.logs_from(message.channel, limit=100):
                 if log.author == message.author:
@@ -95,8 +102,8 @@ async def on_message(message):
                 pollString = pollString + pollList[i] + ' '
             await client.send_message(message.channel, 'To vote, simply enter your choice: ' + pollString)
             # pollArg = pollList[0]
-            # for item in pollList:
-
+            for i in range(0, len(pollList) - 1):
+                pollDict.update({str(pollList[i]): 0})
             await respond(message)
 
             # poll command error handling
@@ -107,13 +114,20 @@ async def on_message(message):
             # stop poll command
         elif message.content.startswith('!stoppoll') and isPolling:
             isPolling = False
-            await client.send_message(message.channel, '```Poll results:\n' + pollArg + ' received ' + str(pollCount) + ' votes' + '```')
+            pollResultString = ''
+            i = 0
+            print(len(pollDict))
+            for items in pollDict:
+                pollResultString = str(items) + ' received ' + str(pollDict[items]) + ' votes\n'
+                i += 1
+            await client.send_message(message.channel, '```Poll results:\n' + str(pollResultString) + '```')
 
             # bot diagnostic command
         elif message.content.startswith('!info'):
             serversize = str(len(set(client.get_all_members())))
             threads = thr.active_count()
-            await client.send_message(message.channel, '```' + 'I AM SnekBot!\n' + ('-' * 14) + '\nCurrently serving: ' + serversize + ' hoomans.' + '\nActive Threads: ' + str(threads) + '```')
+            uptime = get_time(time.time(), startTime)
+            await client.send_message(message.channel, '```' + 'I AM SnekBot!\n' + ('-' * 14) + '\nCurrently serving: ' + serversize + ' hoomans.' + '\nActive Threads: ' + str(threads) + '\nUptime: ' + uptime + '```')
             await respond(message)
 
             # set playing command
