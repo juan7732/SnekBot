@@ -158,14 +158,14 @@ async def on_message(message):
             await client.send_message(message.channel, 'Good Night Everybody!')
             await respond(message)
 
-            # sleeper thread test
+            # remindme command sets a reminder in x minutes
         elif message.content.startswith('!remindme'):
             remindString = str(message.content).split()
             remindString.pop(0)
             remindTime = remindString.pop(0)
-            await client.send_message(message.channel,"I will remind " + str(message.author) + '\n' + " ".join(remindString) + ' in: ' + remindTime + ' minutes')
+            await client.send_message(message.channel,"I will remind " + str(message.author.nick) + '\n' + " ".join(remindString) + ' in: ' + remindTime + ' minutes')
             await asyncio.sleep(int(remindTime) * 60)
-            await client.send_message(message.channel, " ".join(remindString) + '!')
+            await client.send_message(message.channel, str(message.author.mention) + ' ' + " ".join(remindString) + '!')
             await respond(message)
 
             # disconnect command
