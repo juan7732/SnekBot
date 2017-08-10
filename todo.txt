@@ -1,6 +1,6 @@
 ToDo:
 Snek
-add reminders
+add more functionality to reminders
 add custom command utility
 work on backend logging and usability
 develop point system

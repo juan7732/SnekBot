@@ -1,0 +1,2 @@
+!test - returns length of a message log gathered from a message channel (default function in example)
+!

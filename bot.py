@@ -28,11 +28,13 @@ client = discord.Client()
 @client.event
 async def on_ready():
     global startTime
+    global f
     print('Logged in as')
     print(client.user.name)
     print(client.user.id)
     print('-' * len(client.user.id))
     startTime = time.time()
+    f.close()
 
 async def respond(message):
     await client.add_reaction(message, 'Jebaited:288754567347175424')
@@ -92,7 +94,7 @@ async def on_message(message):
             await client.send_message(message.channel, 'List of commands includes: \n!test\n!sleep\n!gn\n!commands')
             await respond(message)
 
-            # poll command
+            # poll command (can compound into one function)
         elif message.content.startswith('!poll') and not isPolling:
             isPolling = True
             pollList = str(message.content).split()
@@ -120,6 +122,15 @@ async def on_message(message):
                 pollResultString = pollResultString + '\n' + str(items) + ' received ' + str(pollDict[items]) + ' votes'
                 i += 1
             await client.send_message(message.channel, '```Poll results:' + str(pollResultString) + '```')
+            pollDict = {}
+
+            # !fprint command prints from local file, if exists
+        elif message.content.startswith('!print'):
+            fi = str(message.content).split()
+            fi.pop(0)
+            fileString = ''
+            with open(fi) as fil:
+                pass
 
             # bot diagnostic command
         elif message.content.startswith('!info'):
@@ -148,9 +159,13 @@ async def on_message(message):
             await respond(message)
 
             # sleeper thread test
-        elif message.content.startswith('!sleep'):
-            await asyncio.sleep(5)
-            await client.send_message(message.channel, 'Done sleeping')
+        elif message.content.startswith('!remindme'):
+            remindString = str(message.content).split()
+            remindString.pop(0)
+            remindTime = remindString.pop(0)
+            await client.send_message(message.channel,"I will remind " + str(message.author) + '\n' + " ".join(remindString) + ' in: ' + remindTime + ' minutes')
+            await asyncio.sleep(int(remindTime) * 60)
+            await client.send_message(message.channel, " ".join(remindString) + '!')
             await respond(message)
 
             # disconnect command
