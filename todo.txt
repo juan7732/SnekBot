@@ -1,11 +1,13 @@
 ToDo:
 Snek
+refactor global variables into class atrributes
 add more functionality to reminders
 add custom command utility
 work on backend logging and usability
 develop point system
 add moderation powers
 link to other api, for increased usability and connectivity
+use https://github.com/Rapptz/discord.py/blob/master/examples/background_task.py to implement backend event handler
 
 Currently:
 Test how long uptime can last

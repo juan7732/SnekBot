@@ -1,2 +1,10 @@
 !test - returns length of a message log gathered from a message channel (default function in example)
-!
+!commands - returns a list of commands available to user from a file of all commands (not complete)
+!poll - takes in x number of arguements and converts to a unique dictionary and accumulates sums for each key
+!stoppoll - stops current poll and displays results
+!fprint - takes in the name of a file and prints its contents (not complete)
+!info - shows diagnostic bot information (Name,Server Size, Channel, Server, Uptime)
+!setplay - sets playing to (args)
+!gn - sends message 'Good Night Everybody!'
+!remindme - takes int x minutes and string and notifies user in x amount of minutes of string
+!getmyshotty - disconnect command (note terminates all bot processes)

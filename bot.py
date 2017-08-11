@@ -20,6 +20,7 @@ prevchannel = ''
 isPolling = False
 pollDict = {}
 startTime = ''
+pin = ''
 # client naming
 client = discord.Client()
 
@@ -35,15 +36,20 @@ async def on_ready():
     print('-' * len(client.user.id))
     startTime = time.time()
     f.close()
+    print('Token File Closed Successfully')
+
 
 async def respond(message):
-    await client.add_reaction(message, 'Jebaited:288754567347175424')
+    await client.add_reaction(message, '☑')
 
 async def poll(message):
     global pollDict
-    if any(k in str(message.content) for k in pollDict):
-        pollDict[str(message.content)] += 1
-    else:
+    try:
+        if any(k in str(message.content) for k in pollDict):
+            pollDict[str(message.content)] += 1
+        else:
+            pass
+    except KeyError:
         pass
 
 
@@ -53,6 +59,8 @@ def get_time(currenttime, starttime):
     minutes = (uptime % 3600) / 60
     seconds = uptime % 60
     return str(int(hours)) + 'h ' + str(int(minutes)) + 'm ' + str(int(seconds)) + 's'
+
+# future function to listen to console commands
 
 
 @client.event
@@ -71,9 +79,20 @@ async def on_message(message):
         prevchannel = str(message.channel)
     print(str(message.author) + '(' + stamp + ')' + ': ' + message.content)
 
+    if message.type == discord.MessageType.pins_add:
+        await client.delete_message(message)
+        print('Pin Notification Deleted')
+
     # Commands
     if message.author == client.user:
-        pass  # ignores self text
+        global pin
+        if message.content.startswith('To'):
+            pin = message
+            await client.pin_message(message)
+
+        elif message.content.startswith('```Poll'):
+            await client.unpin_message(pin)
+
     else:
         # Poll
         if isPolling:
@@ -91,7 +110,17 @@ async def on_message(message):
 
             # returns a command list for built in commands
         elif message.content.startswith('!commands'):
-            await client.send_message(message.channel, 'List of commands includes: \n!test\n!sleep\n!gn\n!commands')
+            commandString = '```!test - returns length of a message log gathered from a message channel (default function in example)\n ' \
+                            '!commands - returns a list of commands available to user from a file of all commands (not complete)\n' \
+                            '!poll - takes in x number of arguements and converts to a unique dictionary and accumulates sums for each key\n' \
+                            '!stoppoll - stops current poll and displays results\n' \
+                            '!fprint - takes in the name of a file and prints its contents (not complete)\n' \
+                            '!info - shows diagnostic bot information (Name,Server Size, Channel, Server, Uptime)\n' \
+                            '!setplay - sets playing to (args)\n' \
+                            '!gn - sends message \'Good Night Everybody!\'\n' \
+                            '!remindme - takes int x minutes and string and notifies user in x amount of minutes of string\n' \
+                            '!getmyshotty - disconnect command (note terminates all bot processes) ```'
+            await client.send_message(message.channel, 'List of commands includes: \n' + commandString)
             await respond(message)
 
             # poll command (can compound into one function)
@@ -99,10 +128,7 @@ async def on_message(message):
             isPolling = True
             pollList = str(message.content).split()
             pollList.pop(0)
-            pollString = ''
-            for i in (0, len(pollList) - 1):
-                pollString = pollString + pollList[i] + ' '
-            await client.send_message(message.channel, 'To vote, simply enter your choice: ' + pollString)
+            await client.send_message(message.channel, 'To vote, simply enter your choice: ' + ' '.join(pollList))
             # pollArg = pollList[0]
             for i in range(0, len(pollList)):
                 pollDict[str(pollList[i])] = 0
@@ -135,9 +161,15 @@ async def on_message(message):
             # bot diagnostic command
         elif message.content.startswith('!info'):
             serversize = str(len(set(client.get_all_members())))
+            name = 'I AM Snek🐍!\n'
             threads = thr.active_count()
             uptime = get_time(time.time(), startTime)
-            await client.send_message(message.channel, '```' + 'I AM SnekBot!\n' + ('-' * 14) + '\nCurrently serving: ' + serversize + ' hoomans.' + '\nActive Threads: ' + str(threads) + '\nUptime: ' + uptime + '```')
+            channelname = str(message.channel)
+            servername = str(message.server)
+            await client.send_message(message.channel, '```' + name + ('-' * 14) +
+                                      '\nCurrently serving: ' + serversize + ' hoomans.' + '\nActive Threads: ' +
+                                      str(threads) + '\nUptime: ' + uptime + '\nCurrent Channel: ' +
+                                      channelname + '\nServer: ' + servername + '```')
             await respond(message)
 
             # set playing command
@@ -163,9 +195,11 @@ async def on_message(message):
             remindString = str(message.content).split()
             remindString.pop(0)
             remindTime = remindString.pop(0)
-            await client.send_message(message.channel,"I will remind " + str(message.author.nick) + '\n' + " ".join(remindString) + ' in: ' + remindTime + ' minutes')
+            await client.send_message(message.channel, "I will remind " + str(message.author.nick) + '\n' +
+                                      " ".join(remindString) + ' in: ' + remindTime + ' minutes')
             await asyncio.sleep(int(remindTime) * 60)
-            await client.send_message(message.channel, str(message.author.mention) + ' ' + " ".join(remindString) + '!')
+            await client.send_message(message.channel, str(message.author.mention) + ' ' +
+                                      " ".join(remindString) + '!')
             await respond(message)
 
             # disconnect command
