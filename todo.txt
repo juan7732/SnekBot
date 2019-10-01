@@ -8,6 +8,7 @@ develop point system
 add moderation powers
 link to other api, for increased usability and connectivity
 use https://github.com/Rapptz/discord.py/blob/master/examples/background_task.py to implement backend event handler
+continue this
 
 Currently:
 Test how long uptime can last
