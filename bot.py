@@ -33,14 +33,16 @@ async def on_ready():
     print('Logged in as')
     print(client.user.name)
     print(client.user.id)
-    print('-' * len(client.user.id))
+    print('-' * len(str(client.user.id)))
     startTime = time.time()
     f.close()
     print('Token File Closed Successfully')
 
 
 async def respond(message):
-    await client.add_reaction(message, '☑')
+    await message.add_reaction('☑')
+    pass
+
 
 async def poll(message):
     global pollDict
@@ -80,7 +82,7 @@ async def on_message(message):
     print(str(message.author) + '(' + stamp + ')' + ': ' + message.content)
 
     if message.type == discord.MessageType.pins_add:
-        await client.delete_message(message)
+        await message.delete()
         print('Pin Notification Deleted')
 
     # Commands
@@ -88,10 +90,10 @@ async def on_message(message):
         global pin
         if message.content.startswith('To'):
             pin = message
-            await client.pin_message(message)
+            await pin.pin()
 
         elif message.content.startswith('```Poll'):
-            await client.unpin_message(pin)
+            await pin.unpin()
 
     else:
         # Poll
@@ -101,16 +103,16 @@ async def on_message(message):
             # test command
         if message.content.startswith('!test'):
             counter = 0
-            tmp = await client.send_message(message.channel, 'Calculating messages...')
-            async for log in client.logs_from(message.channel, limit=100):
+            tmp = await message.channel.send('Calculating messages...')
+            async for log in message.channel.history(limit=100):
                 if log.author == message.author:
                     counter += 1
-            await client.edit_message(tmp, 'You have {} messages.'.format(counter))
+            await tmp.edit(content=f'You have {counter} messages.')
             await respond(message)
 
             # returns a command list for built in commands
         elif message.content.startswith('!commands'):
-            commandString = '```!test - returns length of a message log gathered from a message channel (default function in example)\n ' \
+            commandString = '```!test - returns length of a message log gathered from a message channel (default function in example)\n' \
                             '!commands - returns a list of commands available to user from a file of all commands (not complete)\n' \
                             '!poll - takes in x number of arguements and converts to a unique dictionary and accumulates sums for each key\n' \
                             '!stoppoll - stops current poll and displays results\n' \
@@ -120,7 +122,7 @@ async def on_message(message):
                             '!gn - sends message \'Good Night Everybody!\'\n' \
                             '!remindme - takes int x minutes and string and notifies user in x amount of minutes of string\n' \
                             '!getmyshotty - disconnect command (note terminates all bot processes) ```'
-            await client.send_message(message.channel, 'List of commands includes: \n' + commandString)
+            await message.channel.send(f'List of commands includes: \n {commandString}')
             await respond(message)
 
             # poll command (can compound into one function)
@@ -128,7 +130,7 @@ async def on_message(message):
             isPolling = True
             pollList = str(message.content).split()
             pollList.pop(0)
-            await client.send_message(message.channel, 'To vote, simply enter your choice: ' + ' '.join(pollList))
+            await message.channel.send(f'To vote, simply enter your choice {" ".join(pollList)}')
             # pollArg = pollList[0]
             for i in range(0, len(pollList)):
                 pollDict[str(pollList[i])] = 0
@@ -136,7 +138,7 @@ async def on_message(message):
 
             # poll command error handling
         elif message.content.startswith('!poll') and isPolling:
-            await client.send_message(message.channel, 'Stop the current poll to start a new poll hiss!')
+            await message.channel.send('Stop the current poll to start a new poll!')
             await respond(message)
 
             # stop poll command
@@ -147,7 +149,7 @@ async def on_message(message):
             for items in pollDict:
                 pollResultString = pollResultString + '\n' + str(items) + ' received ' + str(pollDict[items]) + ' votes'
                 i += 1
-            await client.send_message(message.channel, '```Poll results:' + str(pollResultString) + '```')
+            await message.channel.send(f'```Poll Results: {pollResultString}```')
             pollDict = {}
 
             # !fprint command prints from local file, if exists
@@ -155,7 +157,7 @@ async def on_message(message):
             fi = str(message.content).split()
             fi.pop(0)
             fileString = ''
-            with open(fi) as fil:
+            with open(fileString) as fil:
                 pass
 
             # bot diagnostic command
@@ -165,11 +167,15 @@ async def on_message(message):
             threads = thr.active_count()
             uptime = get_time(time.time(), startTime)
             channelname = str(message.channel)
-            servername = str(message.server)
-            await client.send_message(message.channel, '```' + name + ('-' * 14) +
-                                      '\nCurrently serving: ' + serversize + ' hoomans.' + '\nActive Threads: ' +
-                                      str(threads) + '\nUptime: ' + uptime + '\nCurrent Channel: ' +
-                                      channelname + '\nServer: ' + servername + '```')
+            servername = str(message.guild)
+            await message.channel.send(f'```'
+                                       f'{"-" * 14}\n'
+                                       f'Currently harrasing {serversize} people\n'
+                                       f'Active Threads: {str(threads)}\n'
+                                       f'Uptime: {uptime}\n'
+                                       f'Current Channel: {channelname}\n'
+                                       f'Server: {servername}'
+                                       f'```')
             await respond(message)
 
             # set playing command
@@ -182,12 +188,12 @@ async def on_message(message):
                     gamestr = gamestr + gamePlayinglist[i] + ' '
             except IndexError:
                 gamestr = ''
-            await client.change_presence(game=discord.Game(name=gamestr))
+            await client.change_presence(status=discord.Game(name=gamestr))
             await respond(message)
 
             # simple text return command
         elif message.content.startswith('!gn'):
-            await client.send_message(message.channel, 'Good Night Everybody!')
+            await message.channel.send('Good Night Everybody!')
             await respond(message)
 
             # remindme command sets a reminder in x minutes
@@ -195,16 +201,15 @@ async def on_message(message):
             remindString = str(message.content).split()
             remindString.pop(0)
             remindTime = remindString.pop(0)
-            await client.send_message(message.channel, "I will remind " + str(message.author.nick) + '\n' +
-                                      " ".join(remindString) + ' in: ' + remindTime + ' minutes')
+            await message.channel.send(f'I will remind {message.author.display_name}\n'
+                                       f'{" ".join(remindString)} in {remindTime} minutes')
             await asyncio.sleep(int(remindTime) * 60)
-            await client.send_message(message.channel, str(message.author.mention) + ' ' +
-                                      " ".join(remindString) + '!')
+            await message.channel.send(f'{message.author.mention} {" ".join(remindString)}!')
             await respond(message)
 
             # disconnect command
         elif message.content.startswith('!getmyshotty'):
-            await client.send_message(message.channel, 'AHHH!')
+            await message.channel.send('AHHH!')
             await client.close()
             if client.is_closed:
                 print('Successfully closed')
